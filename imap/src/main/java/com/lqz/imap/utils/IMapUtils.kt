@@ -54,13 +54,13 @@ object IMapUtils {
             val sourcePointer = GCJPointer(latLng.latitude, latLng.longitude)
             if (targetCs == CoordinateSystem.WGS) {
                 val wgsPointer: WGSPointer = sourcePointer.toExactWGSPointer()
-                return ILatLng(wgsPointer.getLatitude(), wgsPointer.getLongitude())
+                return ILatLng(wgsPointer.latitude, wgsPointer.longitude)
             }
         } else if (sourceCS == CoordinateSystem.WGS) {
             val sourcePointer = WGSPointer(latLng.latitude, latLng.longitude)
             if (targetCs == CoordinateSystem.GCJ) {
                 val gcjPointer: GCJPointer = sourcePointer.toGCJPointer()
-                return ILatLng(gcjPointer.getLatitude(), gcjPointer.getLongitude())
+                return ILatLng(gcjPointer.latitude, gcjPointer.longitude)
             }
         }
         return latLng
