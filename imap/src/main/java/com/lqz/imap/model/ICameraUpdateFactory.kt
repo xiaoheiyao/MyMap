@@ -256,7 +256,7 @@ data class CameraBoundsUpdate(
         val centerPixel =
             PointF((paddedNEPixel.x + paddedSWPixel.x) / 2, (paddedNEPixel.y + paddedSWPixel.y) / 2)
         centerPixel.y = viewportHeight - centerPixel.y
-        val center: ILatLng = projection.fromScreenLocation(centerPixel)
+        val center: ILatLng? = projection.fromScreenLocation(centerPixel)
 
         return ICameraPosition.Builder()
             .target(center)

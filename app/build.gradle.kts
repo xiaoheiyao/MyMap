@@ -21,6 +21,10 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        //使用老的地图库只能用这个！！！
+        ndk {
+            abiFilters.add("armeabi-v7a")
+        }
     }
 
     buildTypes {
@@ -45,7 +49,7 @@ android {
 
     packaging {
         resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/{AL2.0,LGPL2.1,DEPENDENCIES,LICENSE,NOTICE}"
         }
     }
 }
