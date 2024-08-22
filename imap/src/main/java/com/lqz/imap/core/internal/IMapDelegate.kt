@@ -7,6 +7,7 @@ import com.lqz.imap.model.IMarkerOptions
 import com.lqz.imap.model.IPolygonOptions
 import com.lqz.imap.model.IPolylineOptions
 import com.lqz.imap.model.MapImpType
+import com.lqz.imap.model.MapType
 
 /**
  * 地图委托
@@ -32,12 +33,17 @@ interface IMapDelegate {
     /**
      * 设置当前地图类型
      */
-    fun setMapType(mapType: MapImpType)
+    fun setMapType(mapType: MapType)
 
     /**
      * 设置语言
      */
     fun setLanguage(language: String)
+
+    /**
+     * 获取当前是什么坐标系
+     */
+    fun getCoordinateSystem(): Int
 
     /**
      * 设置地图点的拖动方式

@@ -25,7 +25,7 @@ interface IMarkerDelegate : IOverlayDelegate {
 
     fun isDraggable(): Boolean
 
-    fun getPosition(): ILatLng?
+    fun getPosition(): ILatLng
 
     fun setPosition(latLng: ILatLng)
 

@@ -17,38 +17,39 @@ class Arcgis10MapView(context: Context) : IMapViewDelegate {
     }
 
     override fun getMapAsync(callback: OnMapReadyCallback) {
-
+        val wrapper = Arcgis10MapWrapper(mMapView)
+        callback.onMapReady(wrapper)
     }
 
     override fun getContext(): Context {
-        TODO("Not yet implemented")
+        return mMapView.context
     }
 
     override fun onCreate(bundle: Bundle) {
-        TODO("Not yet implemented")
+//        TODO("Not yet implemented")
     }
 
     override fun onResume() {
-        TODO("Not yet implemented")
+        mMapView.unpause()
     }
 
     override fun onPause() {
-        TODO("Not yet implemented")
+        mMapView.pause()
     }
 
     override fun onStart() {
-        TODO("Not yet implemented")
+//        TODO("Not yet implemented")
     }
 
     override fun onStop() {
-        TODO("Not yet implemented")
+//        TODO("Not yet implemented")
     }
 
     override fun onDestroy() {
-        TODO("Not yet implemented")
+//        TODO("Not yet implemented")
     }
 
     override fun getDelfView(): View {
-        TODO("Not yet implemented")
+        return mMapView
     }
 }

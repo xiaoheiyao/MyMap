@@ -57,4 +57,6 @@ dependencies {
 
     api("com.esri.arcgis.android:arcgis-android:10.2.9")
     api(project(":imap"))
+
+    implementation("com.github.bumptech.glide:glide:4.16.0")
 }

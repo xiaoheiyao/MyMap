@@ -12,7 +12,7 @@ interface IProjectionDelegate {
     /**
      * 将屏幕点转化为经纬度坐标
      */
-    fun fromScreenLocation(point: PointF): ILatLng
+    fun fromScreenLocation(point: PointF): ILatLng?
 
     /**
      * 将经纬度坐标定位到屏幕上的点
@@ -22,10 +22,10 @@ interface IProjectionDelegate {
     /**
      * 计算缩放等级
      */
-    fun calculateZoom(scale: Float)
+    fun calculateZoom(scale: Float):Double
 
     /**
      * 获得可见区域
      */
-    fun getVisibleRegion(): ILatLngBounds
+    fun getVisibleRegion(): ILatLngBounds?
 }

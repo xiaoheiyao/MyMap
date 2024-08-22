@@ -39,37 +39,36 @@ data class ILatLngBounds(
             return ILatLngBounds(maxLat, maxLon, minLat, minLon)
         }
 
+    }
 
-        /**
-         * LatLngBounds对象生成器。
-         */
-        class Builder {
-            private val mLatLngList: MutableList<ILatLng>
+    /**
+     * LatLngBounds对象生成器。
+     */
+    class Builder {
+        private val mLatLngList: MutableList<ILatLng>
 
-            init {
-                mLatLngList = ArrayList()
-            }
-
-            fun build(): ILatLngBounds {
-                return fromLatLngs(mLatLngList)
-            }
-
-            fun includes(latLngs: List<ILatLng>): Builder {
-                for (point in latLngs) {
-                    mLatLngList.add(point)
-                }
-                return this
-            }
-
-            val latLngList: List<ILatLng>
-                get() = mLatLngList
-
-            fun include(latLng: ILatLng): Builder {
-                mLatLngList.add(latLng)
-                return this
-            }
+        init {
+            mLatLngList = ArrayList()
         }
 
+        fun build(): ILatLngBounds {
+            return fromLatLngs(mLatLngList)
+        }
+
+        fun includes(latLngs: List<ILatLng>): Builder {
+            for (point in latLngs) {
+                mLatLngList.add(point)
+            }
+            return this
+        }
+
+        val latLngList: List<ILatLng>
+            get() = mLatLngList
+
+        fun include(latLng: ILatLng): Builder {
+            mLatLngList.add(latLng)
+            return this
+        }
     }
 
     fun toLatLngs(): Array<ILatLng> {

@@ -20,7 +20,7 @@ interface ICircleDelegate : IOverlayDelegate {
 
     fun getStrokeColor(): Int
 
-    fun setCenter(var1: ILatLng)
+    fun setCenter(center: ILatLng)
 
     fun getCenter(): ILatLng
 
