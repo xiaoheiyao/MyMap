@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import com.esri.android.map.MapView
+import com.lqz.imap.core.internal.IMapDelegate
 import com.lqz.imap.core.internal.IMapViewDelegate
 import com.lqz.imap.core.listener.OnMapReadyCallback
 
@@ -16,16 +17,16 @@ class Arcgis10MapView(context: Context) : IMapViewDelegate {
         mMapView.setEsriLogoVisible(false) //设置esri标志不可见
     }
 
-    override fun getMapAsync(callback: OnMapReadyCallback) {
+    override fun getMapAsync(callback: (IMapDelegate) -> Unit) {
         val wrapper = Arcgis10MapWrapper(mMapView)
-        callback.onMapReady(wrapper)
+        callback(wrapper)
     }
 
     override fun getContext(): Context {
         return mMapView.context
     }
 
-    override fun onCreate(bundle: Bundle) {
+    override fun onCreate(bundle: Bundle?) {
 //        TODO("Not yet implemented")
     }
 

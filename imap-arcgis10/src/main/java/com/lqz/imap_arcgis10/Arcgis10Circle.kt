@@ -146,7 +146,7 @@ class Arcgis10Circle(
         return `object`
     }
 
-    override fun setObject(o: Any) {
+    override fun setObject(o: Any?) {
         `object` = o
     }
 

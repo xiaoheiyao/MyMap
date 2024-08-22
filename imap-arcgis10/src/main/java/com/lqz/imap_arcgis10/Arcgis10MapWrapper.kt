@@ -1,8 +1,14 @@
 package com.lqz.imap_arcgis10
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.PointF
+import android.graphics.drawable.BitmapDrawable
+import android.os.Handler
+import android.os.Looper
 import android.text.TextUtils
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import com.esri.android.map.GraphicsLayer
@@ -15,10 +21,18 @@ import com.esri.android.map.event.OnPinchListener
 import com.esri.android.map.event.OnSingleTapListener
 import com.esri.android.map.event.OnStatusChangedListener
 import com.esri.android.map.event.OnZoomListener
+import com.esri.core.geometry.Envelope
 import com.esri.core.geometry.GeometryEngine
 import com.esri.core.geometry.Point
+import com.esri.core.geometry.Polygon
+import com.esri.core.geometry.Polyline
 import com.esri.core.geometry.SpatialReference
 import com.esri.core.map.Graphic
+import com.esri.core.symbol.MarkerSymbol
+import com.esri.core.symbol.PictureMarkerSymbol
+import com.esri.core.symbol.SimpleFillSymbol
+import com.esri.core.symbol.SimpleLineSymbol
+import com.esri.core.symbol.SimpleMarkerSymbol
 import com.lqz.imap.core.internal.ICircleDelegate
 import com.lqz.imap.core.internal.IMapDelegate
 import com.lqz.imap.core.internal.IMarkerDelegate
@@ -28,12 +42,17 @@ import com.lqz.imap.core.internal.IProjectionDelegate
 import com.lqz.imap.core.internal.IUiSettingsDelegate
 import com.lqz.imap.core.listener.InfoWindowAdapter
 import com.lqz.imap.core.listener.OnCameraChangeListener
+import com.lqz.imap.core.listener.OnInfoWindowClickListener
 import com.lqz.imap.core.listener.OnMapClickListener
 import com.lqz.imap.core.listener.OnMapLoadedListener
 import com.lqz.imap.core.listener.OnMapLongClickListener
 import com.lqz.imap.core.listener.OnMapMarkerClickListener
 import com.lqz.imap.core.listener.OnMapMarkerLongClickListener
+import com.lqz.imap.core.listener.OnMapOverlayClickListener
 import com.lqz.imap.core.listener.OnMarkerDragListener
+import com.lqz.imap.core.listener.OnSnapshotReadyListener
+import com.lqz.imap.model.CameraBoundsUpdate
+import com.lqz.imap.model.CameraPositionUpdate
 import com.lqz.imap.model.CoordinateSystem
 import com.lqz.imap.model.ICameraPosition
 import com.lqz.imap.model.ICameraUpdate
@@ -44,7 +63,12 @@ import com.lqz.imap.model.IPolygonOptions
 import com.lqz.imap.model.IPolylineOptions
 import com.lqz.imap.model.MapImpType
 import com.lqz.imap.model.MapType
+import com.lqz.imap.model.RotateUpdate
+import com.lqz.imap.model.ZoomUpdate
+import com.lqz.imap.utils.IMapUtils
+import com.lqz.imap.utils.ViewUtils
 import java.util.Locale
+import java.util.concurrent.Executors
 import kotlin.math.abs
 import kotlin.math.pow
 
@@ -59,6 +83,7 @@ class Arcgis10MapWrapper(private val arcGISMapView: MapView) : IMapDelegate {
     private var annotationTiledLayer: TiledServiceLayer? = null
 
     private var onMapLoadedListener: OnMapLoadedListener? = null
+    private var mOnMapOverlayClickListener: OnMapOverlayClickListener? = null
     private var onMarkerDragListener: OnMarkerDragListener? = null
     private var onMapMarkerClickListener: OnMapMarkerClickListener? = null
     private var onMapMarkerLongClickListener: OnMapMarkerLongClickListener? = null
@@ -79,6 +104,10 @@ class Arcgis10MapWrapper(private val arcGISMapView: MapView) : IMapDelegate {
     fun getCircleHashMap(): java.util.HashMap<Graphic, Arcgis10Circle> {
         return circleHashMap
     }
+
+    private val executorService = Executors.newSingleThreadExecutor()
+    private val mainHandler = Handler(Looper.getMainLooper())
+
     init {
         if (graphicsOverlay == null) {
             graphicsOverlay = GraphicsLayer()
@@ -320,31 +349,144 @@ class Arcgis10MapWrapper(private val arcGISMapView: MapView) : IMapDelegate {
     }
 
     override fun animateCamera(cameraUpdate: ICameraUpdate) {
-        TODO("Not yet implemented")
+        moveCamera(cameraUpdate, 200, true)
     }
 
     override fun animateCamera(cameraUpdate: ICameraUpdate, duration: Long) {
-        TODO("Not yet implemented")
+        moveCamera(cameraUpdate, duration, true)
     }
 
     override fun getMaxZoom(): Float {
-        TODO("Not yet implemented")
+        return 19f
     }
 
     override fun getMinZoom(): Float {
-        TODO("Not yet implemented")
+        return 0f
     }
 
     override fun addMarker(options: IMarkerOptions): IMarkerDelegate {
-        TODO("Not yet implemented")
+        val markerSymbol: MarkerSymbol
+        if (options.icon != null) {
+            markerSymbol = PictureMarkerSymbol(BitmapDrawable(options.icon!!.bitmap))
+        } else {
+            markerSymbol = SimpleMarkerSymbol(Color.BLUE, 10, SimpleMarkerSymbol.STYLE.CIRCLE)
+        }
+        var markerWidth = 0f
+        var markerHeight = 0f
+        if (options.icon != null) {
+            markerWidth = options.icon!!.bitmap.getWidth().toFloat()
+            markerHeight = options.icon!!.bitmap.getHeight().toFloat()
+        }
+        markerSymbol.setOffsetX(
+            ViewUtils.px2dip(
+                getContext(),
+                markerWidth * (options.anchorX - 0.5f)
+            )
+        )
+        markerSymbol.setOffsetY(
+            ViewUtils.px2dip(
+                getContext(),
+                markerHeight * (options.anchorY - 0.5f)
+            )
+        )
+        markerSymbol.setAngle(options.rotate)
+        var point = Point(options.position.longitude, options.position.latitude)
+        point = GeometryEngine.project(
+            point,
+            SpatialReference.create(SpatialReference.WKID_WGS84),
+            getSpatialReference()
+        ) as Point
+        val graphic = Graphic(point, markerSymbol, options.zIndex.toInt())
+        val id = graphicsOverlay!!.addGraphic(graphic)
+        val arcgisMarker = Arcgis10Marker(id, graphic, this, options)
+        arcgisMarker.setDraggable(options.draggable)
+        arcgisMarker.setTitle(options.title)
+        arcgisMarker.setEnable(options.enable)
+        arcgisMarker.setObject(options.`object`)
+        mMapMarkerHashMap[graphic] = arcgisMarker
+        return arcgisMarker
     }
 
-    override fun addMarkers(optionsList: List<IMarkerOptions>): List<IMarkerDelegate> {
-        TODO("Not yet implemented")
+    override fun addMarkers(
+        optionsList: List<IMarkerOptions>,
+        callback: (List<IMarkerDelegate>) -> Unit
+    ) {
+
+        // 启动一个后台线程执行计算
+        executorService.execute(Runnable {
+            val graphics = arrayOfNulls<Graphic>(optionsList.size)
+            var i = 0
+            for (options in optionsList) {
+                val markerSymbol: MarkerSymbol =
+                    getMarkerSymbol(options)
+                var point = Point(
+                    options.position.longitude,
+                    options.position.latitude
+                )
+                point = GeometryEngine.project(
+                    point,
+                    SpatialReference.create(SpatialReference.WKID_WGS84),
+                    getSpatialReference()
+                ) as Point
+                val graphic = Graphic(point, markerSymbol, options.zIndex.toInt())
+                graphics[i++] = graphic
+            }
+            mainHandler.post(Runnable {
+                val markerList: MutableList<IMarkerDelegate> =
+                    ArrayList()
+                Log.e("test", "initView: 地图层主线程绘制点开始")
+                val ids = graphicsOverlay!!.addGraphics(graphics)
+                Log.e("test", "initView: 地图层主线程绘制点结束")
+                for (i1 in ids.indices) {
+                    val arcgisMarker =
+                        Arcgis10Marker(
+                            ids[i1],
+                            graphics[i1]!!,
+                            this@Arcgis10MapWrapper,
+                            optionsList[i1]
+                        )
+                    arcgisMarker.setDraggable(optionsList[i1].draggable)
+                    arcgisMarker.setTitle(optionsList[i1].title)
+                    arcgisMarker.setEnable(optionsList[i1].enable)
+                    arcgisMarker.setObject(optionsList[i1].`object`)
+                    mMapMarkerHashMap[graphics[i1]!!] = arcgisMarker
+                    markerList.add(arcgisMarker)
+                }
+                callback(markerList)
+            })
+        })
+
     }
 
     override fun addPolyline(options: IPolylineOptions): IPolylineDelegate {
-        TODO("Not yet implemented")
+        val pointList: MutableList<Point> =
+            java.util.ArrayList()
+        val polyline = Polyline()
+        var i = 0
+        for ((latitude, longitude) in options.points) {
+            val point = GeometryEngine.project(
+                Point(
+                    longitude,
+                    latitude
+                ), SpatialReference.create(SpatialReference.WKID_WGS84), getSpatialReference()
+            ) as Point
+            pointList.add(point)
+            if (i == 0) {
+                polyline.startPath(point)
+            } else {
+                polyline.lineTo(point)
+            }
+            i++
+        }
+        val lineSymbol = SimpleLineSymbol(options.color, options.width)
+        if (options.isDottedLine) {
+            lineSymbol.setStyle(SimpleLineSymbol.STYLE.DOT)
+        } else {
+            lineSymbol.setStyle(SimpleLineSymbol.STYLE.SOLID)
+        }
+        val graphic = Graphic(polyline, lineSymbol, options.zIndex as Int)
+        val id = graphicsOverlay!!.addGraphic(graphic)
+        return Arcgis10Polyline(id, graphic, this)
     }
 
     override fun addPolylines(optionsList: List<IPolylineOptions>): List<IPolylineDelegate> {
@@ -352,19 +494,155 @@ class Arcgis10MapWrapper(private val arcGISMapView: MapView) : IMapDelegate {
     }
 
     override fun addPolygon(options: IPolygonOptions): IPolygonDelegate {
-        TODO("Not yet implemented")
+        val pointList: MutableList<Point> =
+            java.util.ArrayList()
+        var i = 0
+        val polygon = Polygon()
+        for ((latitude, longitude) in options.points) {
+            val point = GeometryEngine.project(
+                Point(
+                    longitude,
+                    latitude
+                ), SpatialReference.create(SpatialReference.WKID_WGS84), getSpatialReference()
+            ) as Point
+            pointList.add(point)
+            if (i == 0) {
+                polygon.startPath(point)
+            } else {
+                polygon.lineTo(point)
+            }
+            i++
+        }
+        val outlineSymbol =
+            SimpleLineSymbol(options.strokeColor, options.strokeWidth)
+        outlineSymbol.setStyle(SimpleLineSymbol.STYLE.SOLID)
+        val fillSymbol =
+            SimpleFillSymbol(options.fillColor, SimpleFillSymbol.STYLE.SOLID)
+        fillSymbol.setOutline(outlineSymbol)
+        val graphic = Graphic(polygon, fillSymbol, options.zIndex as Int)
+        val id = graphicsOverlay!!.addGraphic(graphic)
+        return Arcgis10Polygon(id, graphic, this)
     }
 
     override fun addPolygons(optionsList: List<IPolygonOptions>): List<IPolygonDelegate> {
-        TODO("Not yet implemented")
+        val polygonDelegateList: MutableList<IPolygonDelegate> = java.util.ArrayList()
+        for (options in optionsList) {
+            val pointList: MutableList<Point> = java.util.ArrayList()
+            var i = 0
+            val polygon = Polygon()
+            for ((latitude, longitude) in options.points) {
+                var point = Point(longitude, latitude)
+                point = GeometryEngine.project(
+                    point,
+                    SpatialReference.create(SpatialReference.WKID_WGS84),
+                    getSpatialReference()
+                ) as Point
+                pointList.add(point)
+                if (i == 0) {
+                    polygon.startPath(point)
+                } else {
+                    polygon.lineTo(point)
+                }
+                i++
+            }
+            val outlineSymbol = SimpleLineSymbol(options.strokeColor, options.strokeWidth)
+            outlineSymbol.setStyle(SimpleLineSymbol.STYLE.SOLID)
+            val fillSymbol = SimpleFillSymbol(options.fillColor, SimpleFillSymbol.STYLE.SOLID)
+            fillSymbol.setOutline(outlineSymbol)
+            val graphic = Graphic(polygon, fillSymbol, options.zIndex.toInt())
+            val id = graphicsOverlay!!.addGraphic(graphic)
+            val arcgisPolygon = Arcgis10Polygon(id, graphic, this)
+            polygonDelegateList.add(arcgisPolygon)
+        }
+//        graphicsOverlay.addGraphics((Graphic[]) graphicList.toArray());
+        //        graphicsOverlay.addGraphics((Graphic[]) graphicList.toArray());
+        return polygonDelegateList
     }
 
     override fun addCircle(options: ICircleOptions): ICircleDelegate {
-        TODO("Not yet implemented")
+        val pointList: MutableList<Point> = java.util.ArrayList()
+        val centerLatlng: ILatLng = options.centerPoint
+        val radius: Float = options.radius
+        val polygon = Polygon()
+        for (i in 0..360) {
+            val (latitude, longitude) = IMapUtils.convertDistanceToLogLat(
+                centerLatlng,
+                radius.toDouble(),
+                i.toDouble()
+            )
+            val point = GeometryEngine.project(
+                Point(longitude, latitude),
+                SpatialReference.create(SpatialReference.WKID_WGS84),
+                getSpatialReference()
+            ) as Point
+            pointList.add(point)
+            if (i == 0) {
+                polygon.startPath(point)
+            } else {
+                polygon.lineTo(point)
+            }
+        }
+
+        val outlineSymbol = SimpleLineSymbol(options.strokeColor, options.strokeWidth)
+        outlineSymbol.setStyle(SimpleLineSymbol.STYLE.SOLID)
+        val fillSymbol = SimpleFillSymbol(
+            options.fillColor, SimpleFillSymbol.STYLE.SOLID
+        )
+        fillSymbol.setOutline(outlineSymbol)
+        val graphic = Graphic(polygon, fillSymbol, options.zIndex.toInt())
+        val id = graphicsOverlay!!.addGraphic(graphic)
+        val arcgisCircle = Arcgis10Circle(id, this, graphic, centerLatlng, options.radius)
+        circleHashMap[graphic] = arcgisCircle
+        return arcgisCircle
     }
 
     override fun addCircles(optionsList: List<ICircleOptions>): List<ICircleDelegate> {
         TODO("Not yet implemented")
+    }
+
+    override fun setOnCameraChangeListener(onCameraChangeListener: OnCameraChangeListener) {
+        this.onCameraChangeListener = onCameraChangeListener
+    }
+
+    override fun setOnMapLoadedListener(onMapLoadedListener: OnMapLoadedListener) {
+        this.onMapLoadedListener = onMapLoadedListener
+    }
+
+    override fun setOnInfoWindowClickListener(listener: OnInfoWindowClickListener) {
+        TODO("Not yet implemented")
+    }
+
+    override fun setOnMarkerClickListener(listener: OnMapMarkerClickListener) {
+        onMapMarkerClickListener = listener
+    }
+
+    override fun setOnMarkerLongClickListener(listener: OnMapMarkerLongClickListener) {
+        onMapMarkerLongClickListener = listener
+    }
+
+    override fun setOnOverlayClickListener(listener: OnMapOverlayClickListener) {
+        mOnMapOverlayClickListener = listener
+    }
+
+    override fun setOnMarkerDragListener(listener: OnMarkerDragListener) {
+        onMarkerDragListener = listener
+    }
+
+    override fun setOnMapClickListener(listener: OnMapClickListener) {
+        onMapClickListener = listener
+    }
+
+    override fun setOnMapLongClickListener(listener: OnMapLongClickListener) {
+        onMapLongClickListener = listener
+    }
+
+    override fun getSnapshot(listener: OnSnapshotReadyListener) {
+
+        // export the image from the mMapView
+        val viewBitmap: Bitmap = getViewBitmap(arcGISMapView)
+        if (listener != null) {
+            listener.onSnapshotReady(viewBitmap)
+        }
     }
 
 
@@ -441,6 +719,149 @@ class Arcgis10MapWrapper(private val arcGISMapView: MapView) : IMapDelegate {
             }
         }
         return false
+    }
+
+
+    private fun moveCamera(cameraUpdate: ICameraUpdate, duation: Long, animate: Boolean) {
+        if (cameraUpdate is CameraPositionUpdate) {
+            val cameraPositionUpdate: CameraPositionUpdate = cameraUpdate as CameraPositionUpdate
+            val targetLatLng = cameraPositionUpdate.target
+            var target = Point(
+                targetLatLng!!.longitude,
+                targetLatLng!!.latitude
+            )
+            target = GeometryEngine.project(
+                target,
+                SpatialReference.create(SpatialReference.WKID_WGS84),
+                getSpatialReference()
+            ) as Point
+            val zoom =
+                if (cameraPositionUpdate.zoom < 0) 0 else cameraPositionUpdate.zoom
+            val rotate: Double =
+                if (cameraPositionUpdate.bearing < 0) 0.0 else cameraPositionUpdate.bearing
+            if (animate) {
+                arcGISMapView.rotationAngle = rotate
+                arcGISMapView.zoomToScale(target, getScaleByZoomLevel(zoom.toInt()))
+            } else {
+                arcGISMapView.rotationAngle = rotate
+                arcGISMapView.zoomToScale(target, getScaleByZoomLevel(zoom.toInt()))
+            }
+        } else if (cameraUpdate is ZoomUpdate) {
+            val zoomUpdate: ZoomUpdate = cameraUpdate
+            if (zoomUpdate.type == ZoomUpdate.ZOOM_IN) {
+                arcGISMapView.zoomin(animate)
+            } else if (zoomUpdate.type == ZoomUpdate.ZOOM_OUT) {
+                arcGISMapView.zoomout(animate)
+            } else if (zoomUpdate.type == ZoomUpdate.ZOOM_TO) {
+                val targetGeometry = arcGISMapView.center
+                arcGISMapView.zoomToScale(
+                    targetGeometry,
+                    getScaleByZoomLevel(zoomUpdate.zoom.toInt())
+                )
+            }
+        } else if (cameraUpdate is CameraBoundsUpdate) {
+            val cameraBoundsUpdate: CameraBoundsUpdate = cameraUpdate as CameraBoundsUpdate
+            var point1 = Point(
+                cameraBoundsUpdate.bounds.mLonWest,
+                cameraBoundsUpdate.bounds.mLatNorth
+            )
+            point1 = GeometryEngine.project(
+                point1,
+                SpatialReference.create(SpatialReference.WKID_WGS84),
+                getSpatialReference()
+            ) as Point
+            var point2 = Point(
+                cameraBoundsUpdate.bounds.mLonEast,
+                cameraBoundsUpdate.bounds.mLatSouth
+            )
+            point2 = GeometryEngine.project(
+                point2,
+                SpatialReference.create(SpatialReference.WKID_WGS84),
+                getSpatialReference()
+            ) as Point
+            val envelope = Envelope(point2.x, point1.y, point1.x, point2.y)
+            arcGISMapView.setExtent(
+                envelope,
+                ViewUtils.dip2px(getContext(), cameraBoundsUpdate.paddingRectF!!.left).toInt(),
+                animate
+            )
+        } else if (cameraUpdate is RotateUpdate) {
+            val rotateUpdate: RotateUpdate = cameraUpdate
+            var angle = 0.0
+            if (rotateUpdate.rotate > 0 && rotateUpdate.rotate <= 180) {
+                angle = -rotateUpdate.rotate
+            } else if (rotateUpdate.rotate > 180) {
+                angle = 360 - rotateUpdate.rotate
+            }
+            val center: ILatLng = rotateUpdate.center
+            val centerPoint = GeometryEngine.project(
+                Point(center.longitude, center.latitude),
+                SpatialReference.create(SpatialReference.WKID_WGS84),
+                getSpatialReference()
+            ) as Point
+            arcGISMapView.setRotationAngle(angle, centerPoint, animate)
+        }
+        arcGISMapView.postDelayed({
+            if (onCameraChangeListener != null) {
+                onCameraChangeListener!!.onCameraChanged(
+                    getCameraPosition().target!!,
+                    getCameraPosition().zoom.toFloat(), getRotate()
+                )
+            }
+        }, 500)
+    }
+
+    private fun getMarkerSymbol(options: IMarkerOptions): MarkerSymbol {
+        val markerSymbol: MarkerSymbol
+        if (options.icon != null) {
+            markerSymbol = PictureMarkerSymbol(BitmapDrawable(options.icon!!.bitmap))
+        } else {
+            markerSymbol = SimpleMarkerSymbol(Color.BLUE, 10, SimpleMarkerSymbol.STYLE.CIRCLE)
+        }
+        markerSymbol.setAngle(options.rotate)
+        var markerWidth = 0f
+        var markerHeight = 0f
+        if (options.icon != null) {
+            markerWidth = options.icon!!.bitmap.getWidth().toFloat()
+            markerHeight = options.icon!!.bitmap.getHeight().toFloat()
+        }
+        markerSymbol.setOffsetX(markerWidth * (options.anchorX - 0.5f))
+        markerSymbol.setOffsetY(markerHeight * (options.anchorY - 0.5f))
+        return markerSymbol
+    }
+
+
+    /**
+     * mapView 截图
+     *
+     * @param v
+     * @return
+     */
+    private fun getViewBitmap(v: MapView): Bitmap {
+        v.clearFocus()
+        v.setPressed(false)
+        // 能画缓存就返回false
+        val willNotCache = v.willNotCacheDrawing()
+        v.setWillNotCacheDrawing(false)
+        val color = v.drawingCacheBackgroundColor
+        v.drawingCacheBackgroundColor = 0
+        if (color != 0) {
+            v.destroyDrawingCache()
+        }
+        v.buildDrawingCache()
+        var cacheBitmap: Bitmap? = null
+        while (cacheBitmap == null) {
+            cacheBitmap = v.getDrawingMapCache(
+                0f, 0f, v.width,
+                v.height
+            )
+        }
+        val bitmap = Bitmap.createBitmap(cacheBitmap)
+        // Restore the view
+        v.destroyDrawingCache()
+        v.setWillNotCacheDrawing(willNotCache)
+        v.drawingCacheBackgroundColor = color
+        return bitmap
     }
 
 }

@@ -42,7 +42,7 @@ class MapView @JvmOverloads constructor(
         return iMapView
     }
 
-    fun onCreate(bundle: Bundle) {
+    fun onCreate(bundle: Bundle?) {
         iMapView?.onCreate(bundle)
     }
 

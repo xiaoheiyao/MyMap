@@ -9,7 +9,7 @@ import com.lqz.imap.model.ILatLng
  */
 interface IMarkerDelegate : IOverlayDelegate {
 
-    fun setTitle(title: String)
+    fun setTitle(title: String?)
 
     fun getTitle(): String?
 

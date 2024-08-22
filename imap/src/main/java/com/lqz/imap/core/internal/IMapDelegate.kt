@@ -1,7 +1,17 @@
 package com.lqz.imap.core.internal
 
-import com.lqz.imap.model.ICameraUpdate
+import com.lqz.imap.core.listener.OnCameraChangeListener
+import com.lqz.imap.core.listener.OnInfoWindowClickListener
+import com.lqz.imap.core.listener.OnMapClickListener
+import com.lqz.imap.core.listener.OnMapLoadedListener
+import com.lqz.imap.core.listener.OnMapLongClickListener
+import com.lqz.imap.core.listener.OnMapMarkerClickListener
+import com.lqz.imap.core.listener.OnMapMarkerLongClickListener
+import com.lqz.imap.core.listener.OnMapOverlayClickListener
+import com.lqz.imap.core.listener.OnMarkerDragListener
+import com.lqz.imap.core.listener.OnSnapshotReadyListener
 import com.lqz.imap.model.ICameraPosition
+import com.lqz.imap.model.ICameraUpdate
 import com.lqz.imap.model.ICircleOptions
 import com.lqz.imap.model.IMarkerOptions
 import com.lqz.imap.model.IPolygonOptions
@@ -93,12 +103,64 @@ interface IMapDelegate {
 //    fun setInfoWindowAdapter(adapter: InfoWindowAdapter)
 
     fun addMarker(options: IMarkerOptions): IMarkerDelegate
-    fun addMarkers(optionsList: List<IMarkerOptions>): List<IMarkerDelegate>
+    fun addMarkers(optionsList: List<IMarkerOptions>,callback:(List<IMarkerDelegate>) -> Unit)
     fun addPolyline(options: IPolylineOptions): IPolylineDelegate
     fun addPolylines(optionsList: List<IPolylineOptions>): List<IPolylineDelegate>
     fun addPolygon(options: IPolygonOptions): IPolygonDelegate
     fun addPolygons(optionsList: List<IPolygonOptions>): List<IPolygonDelegate>
     fun addCircle(options: ICircleOptions): ICircleDelegate
     fun addCircles(optionsList: List<ICircleOptions>): List<ICircleDelegate>
+
+    /** Register a callback to be invoked when the camera of the map has changed  */
+    fun setOnCameraChangeListener(onCameraChangeListener: OnCameraChangeListener)
+
+    fun setOnMapLoadedListener(onMapLoadedListener: OnMapLoadedListener)
+
+    /**
+     * Set the callback for info window click events
+     *
+     * @param listener
+     */
+    fun setOnInfoWindowClickListener(listener: OnInfoWindowClickListener)
+
+    /**
+     * Register a callback to be invoked when a map marker is clicked
+     *
+     * @param listener
+     */
+    fun setOnMarkerClickListener(listener: OnMapMarkerClickListener)
+
+    /**
+     * Register a callback to be invoked when a map marker is clicked
+     *
+     * @param listener
+     */
+    fun setOnMarkerLongClickListener(listener: OnMapMarkerLongClickListener)
+
+    /**
+     * Register a callback to be invoked when a map marker is clicked
+     *
+     * @param listener
+     */
+    fun setOnOverlayClickListener(listener: OnMapOverlayClickListener)
+
+    /**
+     * Register a callback to be invoked when a map marker is dragged
+     *
+     * @param listener
+     */
+    fun setOnMarkerDragListener(listener: OnMarkerDragListener)
+
+    /**
+     * Register a callback to be invoked when the map is clicked
+     *
+     * @param listener
+     */
+    fun setOnMapClickListener(listener: OnMapClickListener)
+
+    fun setOnMapLongClickListener(listener: OnMapLongClickListener)
+
+    /** Get a Bitmap snapshot of the current  */
+    fun getSnapshot(listener: OnSnapshotReadyListener)
 
 }

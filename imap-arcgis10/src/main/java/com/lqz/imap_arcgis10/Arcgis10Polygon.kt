@@ -11,8 +11,8 @@ import com.lqz.imap.model.ILatLng
 
 class Arcgis10Polygon(
     val id: Int,
-    val arcgisMapWrapper: Arcgis10MapWrapper,
     val graphic: Graphic,
+    val arcgisMapWrapper: Arcgis10MapWrapper,
 ) : IPolygonDelegate {
 
     private var `object`: Any? = null
@@ -113,7 +113,7 @@ class Arcgis10Polygon(
         return `object`
     }
 
-    override fun setObject(o: Any) {
+    override fun setObject(o: Any?) {
         `object` = o
     }
 

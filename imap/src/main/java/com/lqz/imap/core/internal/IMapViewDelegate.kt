@@ -12,11 +12,11 @@ interface IMapViewDelegate {
     /**
      * 异步获取地图
      */
-    fun getMapAsync(callback: OnMapReadyCallback)
+    fun getMapAsync(callback: (IMapDelegate) -> Unit)
 
     fun getContext(): Context
 
-    fun onCreate(bundle: Bundle)
+    fun onCreate(bundle: Bundle?)
 
     fun onResume()
 

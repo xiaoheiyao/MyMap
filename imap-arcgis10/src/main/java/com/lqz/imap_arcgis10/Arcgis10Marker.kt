@@ -43,11 +43,11 @@ class Arcgis10Marker(
         return `object`
     }
 
-    override fun setObject(o: Any) {
+    override fun setObject(o: Any?) {
         `object` = o
     }
 
-    override fun setTitle(title: String) {
+    override fun setTitle(title: String?) {
         this.title = title
     }
 

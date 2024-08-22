@@ -3,7 +3,7 @@ package com.lqz.imap.core.internal
 interface IOverlayDelegate {
     fun getObject(): Any?
 
-    fun setObject(o: Any)
+    fun setObject(o: Any?)
 
     fun remove()
 

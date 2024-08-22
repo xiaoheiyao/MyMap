@@ -152,7 +152,7 @@ class Arcgis10Polyline(
         return `object`
     }
 
-    override fun setObject(o: Any) {
+    override fun setObject(o: Any?) {
         `object` = o
     }
 

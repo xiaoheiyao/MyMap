@@ -150,7 +150,8 @@ object IMapUtils {
      */
     fun convertDistanceToLogLat(
         latLng: ILatLng,
-        distance: Double, azimuth: Double
+        distance: Double,
+        azimuth: Double
     ): ILatLng {
         val azi = rad(azimuth)
         // 将距离转换成经度的计算公式
