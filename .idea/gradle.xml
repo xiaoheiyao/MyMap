@@ -10,6 +10,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/app-arcgis100" />
             <option value="$PROJECT_DIR$/imap" />
             <option value="$PROJECT_DIR$/imap-arcgis10" />
             <option value="$PROJECT_DIR$/imap-arcgis100" />

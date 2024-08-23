@@ -14,7 +14,6 @@ import com.lqz.imap.core.internal.IMapViewDelegate
 import com.lqz.imap.core.listener.OnMapLoadedListener
 import com.lqz.imap.model.MapType
 import com.lqz.imap_arcgis10.Arcgis10MapView
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

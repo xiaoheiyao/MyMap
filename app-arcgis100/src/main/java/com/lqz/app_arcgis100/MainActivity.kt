@@ -1,6 +1,5 @@
-package com.lqz.map
+package com.lqz.app_arcgis100
 
-import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -11,14 +10,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.viewinterop.AndroidView
-import com.lqz.imap.core.MapView
-import com.lqz.imap.core.internal.IMapDelegate
-import com.lqz.imap.core.internal.IMapViewDelegate
-import com.lqz.imap.core.listener.OnMapLoadedListener
-import com.lqz.imap.model.MapType
-import com.lqz.map.ui.page.common.AppScaffold
-import com.lqz.map.ui.theme.MapTheme
+import com.lqz.app_arcgis100.ui.page.MapPage
+import com.lqz.app_arcgis100.ui.theme.MapTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,8 +23,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppScaffold(savedInstanceState)
-
+                    MapPage()
                 }
             }
         }

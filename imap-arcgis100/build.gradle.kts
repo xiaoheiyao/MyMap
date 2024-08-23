@@ -42,5 +42,5 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 
     api(project(":imap"))
-    implementation("com.esri.arcgisruntime:arcgis-android:100.15.5")
+    api("com.esri.arcgisruntime:arcgis-android:100.15.5")
 }
