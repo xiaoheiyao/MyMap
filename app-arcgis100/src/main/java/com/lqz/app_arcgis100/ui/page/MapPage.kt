@@ -9,9 +9,13 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import com.esri.arcgisruntime.geometry.Point
 import com.esri.arcgisruntime.mapping.ArcGISMap
 import com.esri.arcgisruntime.mapping.Basemap
 import com.esri.arcgisruntime.mapping.view.MapView
+import com.lqz.imap_arcgis100.tdt.LayerInfoFactory
+import com.lqz.imap_arcgis100.tdt.TianDiTuLayer
+import com.lqz.imap_arcgis100.tdt.TianDiTuLayerTypes
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -30,9 +34,15 @@ fun Arcgis100MapView() {
         modifier = Modifier.fillMaxSize(),
         factory = {
             mapView = MapView(it)
+//            val map = ArcGISMap(Basemap.Type.TOPOGRAPHIC, 32.056295, 118.195800, 16)
+//            mapView?.map = map
+            addTDT(mapView!!)
+            val centralPoint = Point(116.41,39.902);
             val map = ArcGISMap(Basemap.Type.TOPOGRAPHIC, 32.056295, 118.195800, 16)
             mapView?.map = map
-            mapView?.setAttributionTextVisible(false)
+            mapView?.setViewpointCenterAsync(centralPoint,400000.0) //设置地图中心点和初始放缩比
+            mapView?.setAttributionTextVisible(false); //隐藏Esri logo
+
             mapView!!
         },
         update = {
@@ -58,4 +68,27 @@ fun Arcgis100MapView() {
         }
     }
 }
+
+fun addTDT(mapView: MapView) {
+    val layerInfo = LayerInfoFactory.getLayerInfo(TianDiTuLayerTypes.TIANDITU_VECTOR_2000)
+    val info = layerInfo.tileInfo
+    val fullExtent = layerInfo.fullExtent
+    val layer = TianDiTuLayer(info, fullExtent)
+    layer.layerInfo = layerInfo
+
+//    val layerInfoCva = LayerInfoFactory.getLayerInfo(TianDiTuLayerTypes.TIANDITU_VECTOR_ANNOTATION_CHINESE_2000)
+//    val infoCva = layerInfoCva.tileInfo
+//    val fullExtentCva = layerInfoCva.fullExtent
+//    val layerCva = TianDiTuLayer(infoCva, fullExtentCva)
+//    layerCva.layerInfo = layerInfoCva
+
+    val map = ArcGISMap().apply {
+        basemap.baseLayers.add(layer)
+//        basemap.baseLayers.add(layerCva)
+    }
+    mapView.map = map
+}
+
+
+
 
