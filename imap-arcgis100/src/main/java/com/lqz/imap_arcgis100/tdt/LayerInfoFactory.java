@@ -161,7 +161,7 @@ public class LayerInfoFactory {
             case TianDiTuLayerTypes.TIANDITU_VECTOR_ANNOTATION_CHINESE_2000:
             case TianDiTuLayerTypes.TIANDITU_TERRAIN_2000:
             case TianDiTuLayerTypes.TIANDITU_TERRAIN_ANNOTATION_CHINESE_2000:
-                layerInfo.setOrigin(LayerInfoFactory.ORIGIN_2000);
+//                layerInfo.setOrigin(LayerInfoFactory.ORIGIN_2000);
                 layerInfo.setSrid(LayerInfoFactory.SRID_2000);
                 layerInfo.setxMin(LayerInfoFactory.X_MIN_2000);
                 layerInfo.setyMin(LayerInfoFactory.Y_MIN_2000);

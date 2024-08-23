@@ -36,11 +36,11 @@ fun Arcgis100MapView() {
             mapView = MapView(it)
 //            val map = ArcGISMap(Basemap.Type.TOPOGRAPHIC, 32.056295, 118.195800, 16)
 //            mapView?.map = map
-            addTDT(mapView!!)
-            val centralPoint = Point(116.41, 39.902);
-//            val map = ArcGISMap(Basemap.Type.TOPOGRAPHIC, 32.056295, 118.195800, 16)
-//            mapView?.map = map
-            mapView?.setViewpointCenterAsync(centralPoint, 400000.0) //设置地图中心点和初始放缩比
+//            addTDT(mapView!!)
+//            val centralPoint = Point(116.41, 39.902);
+            val map = ArcGISMap(Basemap.Type.IMAGERY, 32.056295, 118.195800, 14)
+            mapView?.map = map
+//            mapView?.setViewpointCenterAsync(centralPoint, 400000.0) //设置地图中心点和初始放缩比
             mapView?.setAttributionTextVisible(false); //隐藏Esri logo
 
             mapView!!
@@ -70,10 +70,10 @@ fun Arcgis100MapView() {
 }
 
 fun addTDT(mapView: MapView) {
-    val layerInfo = LayerInfoFactory.getLayerInfo(TianDiTuLayerTypes.TIANDITU_VECTOR_2000)
+    val layerInfo = LayerInfoFactory.getLayerInfo(TianDiTuLayerTypes.TIANDITU_VECTOR_MERCATOR)
     val info = layerInfo.tileInfo
     val fullExtent = layerInfo.fullExtent
-    val layer = TianDiTuLayer(info, fullExtent)
+    val layer = TianDiTuLayer(info, fullExtent,mapView.context)
     layer.layerInfo = layerInfo
 
 //    val layerInfoCva = LayerInfoFactory.getLayerInfo(TianDiTuLayerTypes.TIANDITU_IMAGE_ANNOTATION_CHINESE_MERCATOR)

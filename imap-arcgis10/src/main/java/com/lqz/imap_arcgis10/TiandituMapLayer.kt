@@ -211,7 +211,7 @@ class TiandituMapLayer(
                 "e" + level + "_" + row + "_" + col
             }
         }
-        Log.d("tiandituLayer", "tianDiMapLayerType:$layerType url = $url")
+        Log.e("tiandituLayer", "url = $url")
         return url
     }
 
