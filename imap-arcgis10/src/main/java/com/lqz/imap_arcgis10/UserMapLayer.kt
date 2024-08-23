@@ -19,7 +19,8 @@ class UserMapLayer(
     val layerType: Int,
 ) : TiledServiceLayer(true) {
 
-    private val defaultLayer: TiandituMapLayer = TiandituMapLayer(context, language, countryCode, source, layerType);
+    private val defaultLayer: TiandituMapLayer =
+        TiandituMapLayer(context, language, countryCode, source, layerType);
 
     init {
         try {

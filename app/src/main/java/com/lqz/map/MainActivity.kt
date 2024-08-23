@@ -18,6 +18,7 @@ import com.lqz.imap.core.internal.IMapViewDelegate
 import com.lqz.imap.core.listener.OnMapLoadedListener
 import com.lqz.imap.model.MapType
 import com.lqz.imap_arcgis10.Arcgis10MapView
+import com.lqz.map.ui.page.common.AppScaffold
 import com.lqz.map.ui.theme.MapTheme
 
 class MainActivity : ComponentActivity() {
@@ -30,8 +31,8 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-//                    Greeting("Android")
-                    WtMapView(savedInstanceState)
+                    AppScaffold(savedInstanceState)
+
                 }
             }
         }
@@ -52,48 +53,4 @@ fun GreetingPreview() {
     MapTheme {
         Greeting("Android")
     }
-}
-
-@Composable
-fun WtMapView(
-    savedInstanceState: Bundle?,
-//    mapFeatureCallback: (IMappingMapFeature) -> Unit = {},
-    mapCallback: (IMapDelegate) -> Unit = {},
-) {
-    AndroidView(
-        modifier = Modifier.fillMaxSize(),
-        factory = {
-            val mapView = MapView(it)
-            mapView.initialize(getIMpViewImp(it)) //初始化地图控件
-
-            mapView.onCreate(savedInstanceState) //创建地图控件
-
-            mapView.getIMapView()?.getMapAsync { map ->
-                /*设置地图加载监听器*/
-                map.setOnMapLoadedListener(object : OnMapLoadedListener {
-                    override fun onMapLoaded() {
-//                        mapFeatureCallback(MappingMapFeature(mapView.getIMapView(), map))
-                        mapCallback(map)
-                    }
-
-                })
-                showMapType(map) //设置地图类型
-            }
-            mapView
-        },
-        update = {
-            it.onResume()
-        })
-}
-
-/**
- * 设置地图类型
- * @param map 地图委托类
- */
-fun showMapType(map: IMapDelegate?) {
-    map?.setMapType(MapType.MAP_TYPE_USER_DEFIED)
-}
-
-private fun getIMpViewImp(context: Context): IMapViewDelegate {
-    return Arcgis10MapView(context)
 }

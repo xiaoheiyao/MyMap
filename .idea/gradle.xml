@@ -12,6 +12,7 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/imap" />
             <option value="$PROJECT_DIR$/imap-arcgis10" />
+            <option value="$PROJECT_DIR$/imap-arcgis100" />
           </set>
         </option>
         <option name="resolveExternalAnnotations" value="false" />
