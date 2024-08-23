@@ -15,7 +15,7 @@ import com.esri.arcgisruntime.mapping.Basemap
 import com.esri.arcgisruntime.mapping.view.MapView
 import com.lqz.imap_arcgis100.tdt.LayerInfoFactory
 import com.lqz.imap_arcgis100.tdt.TianDiTuLayer
-import com.lqz.imap_arcgis100.tdt.TianDiTuLayerTypes
+import com.lqz.tianditu.TianDiTuLayerTypes
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -37,10 +37,10 @@ fun Arcgis100MapView() {
 //            val map = ArcGISMap(Basemap.Type.TOPOGRAPHIC, 32.056295, 118.195800, 16)
 //            mapView?.map = map
             addTDT(mapView!!)
-            val centralPoint = Point(116.41,39.902);
-            val map = ArcGISMap(Basemap.Type.TOPOGRAPHIC, 32.056295, 118.195800, 16)
-            mapView?.map = map
-            mapView?.setViewpointCenterAsync(centralPoint,400000.0) //设置地图中心点和初始放缩比
+            val centralPoint = Point(116.41, 39.902);
+//            val map = ArcGISMap(Basemap.Type.TOPOGRAPHIC, 32.056295, 118.195800, 16)
+//            mapView?.map = map
+            mapView?.setViewpointCenterAsync(centralPoint, 400000.0) //设置地图中心点和初始放缩比
             mapView?.setAttributionTextVisible(false); //隐藏Esri logo
 
             mapView!!
@@ -76,7 +76,7 @@ fun addTDT(mapView: MapView) {
     val layer = TianDiTuLayer(info, fullExtent)
     layer.layerInfo = layerInfo
 
-//    val layerInfoCva = LayerInfoFactory.getLayerInfo(TianDiTuLayerTypes.TIANDITU_VECTOR_ANNOTATION_CHINESE_2000)
+//    val layerInfoCva = LayerInfoFactory.getLayerInfo(TianDiTuLayerTypes.TIANDITU_IMAGE_ANNOTATION_CHINESE_MERCATOR)
 //    val infoCva = layerInfoCva.tileInfo
 //    val fullExtentCva = layerInfoCva.fullExtent
 //    val layerCva = TianDiTuLayer(infoCva, fullExtentCva)

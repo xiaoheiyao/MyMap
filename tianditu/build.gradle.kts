@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.lqz.imap_arcgis100"
+    namespace = "com.lqz.tianditu"
     compileSdk = 34
 
     defaultConfig {
@@ -40,8 +40,4 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-
-    api(project(":imap"))
-    api(project(":tianditu"))
-    api("com.esri.arcgisruntime:arcgis-android:100.15.5")
 }

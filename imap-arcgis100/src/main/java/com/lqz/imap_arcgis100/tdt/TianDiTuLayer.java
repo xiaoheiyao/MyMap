@@ -1,9 +1,12 @@
 package com.lqz.imap_arcgis100.tdt;
 
+import android.util.Log;
+
 import com.esri.arcgisruntime.arcgisservices.TileInfo;
 import com.esri.arcgisruntime.data.TileKey;
 import com.esri.arcgisruntime.geometry.Envelope;
 import com.esri.arcgisruntime.layers.ImageTiledLayer;
+import com.lqz.tianditu.TianDiTuConstants;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -52,14 +55,23 @@ public final class TianDiTuLayer extends ImageTiledLayer {
                         + "?service=wmts&request=gettile&version=1.0.0&layer="
                         + layerInfo.getLayerName() + "&format=tiles&tilematrixset="
                         + layerInfo.getTileMatrixSet() + "&tilecol=" + col
-                        + "&tilerow=" + row + "&tilematrix=" + (level) +"&tk=f60c12fad90f2fbb624a1b8fb11d8f7a" ;
+                        + "&tilerow=" + row + "&tilematrix=" + (level) + "&tk=f60c12fad90f2fbb624a1b8fb11d8f7a";
 
-                String path = "https://t1.tianditu.gov.cn/img_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default" +
+//                String path = "https://t1.tianditu.gov.cn/img_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default" +
+//                        "&TILEMATRIXSET=w" +
+//                        "&FORMAT=png" +
+//                        "&TILEMATRIX=" + level +
+//                        "&TILEROW=" + row +
+//                        "&TILECOL=" + col + "&tk=f60c12fad90f2fbb624a1b8fb11d8f7a";
+
+                String path = layerInfo.getUrl() + "SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default" +
                         "&TILEMATRIXSET=w" +
                         "&FORMAT=png" +
                         "&TILEMATRIX=" + level +
                         "&TILEROW=" + row +
-                        "&TILECOL=" + col + "&tk=f60c12fad90f2fbb624a1b8fb11d8f7a";
+                        "&TILECOL=" + col + "&tk=" + TianDiTuConstants.KEY;
+
+                Log.e("LQZ", "url = " + path);
                 URL url = new URL(path);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
