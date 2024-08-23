@@ -51,3 +51,4 @@ rootProject.name = "Map"
 include(":app")
 include(":imap")
 include(":imap-arcgis10")
+include(":imap-arcgis100")
