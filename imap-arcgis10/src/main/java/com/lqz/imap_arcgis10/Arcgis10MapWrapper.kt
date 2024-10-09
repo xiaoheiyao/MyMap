@@ -348,6 +348,10 @@ class Arcgis10MapWrapper(private val arcGISMapView: MapView) : IMapDelegate {
         return builder.build()
     }
 
+    override fun moveCamera(cameraUpdate: ICameraUpdate) {
+        moveCamera(cameraUpdate, 0, false)
+    }
+
     override fun animateCamera(cameraUpdate: ICameraUpdate) {
         moveCamera(cameraUpdate, 200, true)
     }

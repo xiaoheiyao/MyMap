@@ -80,6 +80,8 @@ interface IMapDelegate {
      */
     fun getCameraPosition(): ICameraPosition
 
+    fun moveCamera(cameraUpdate: ICameraUpdate)
+
     /**
      * 图层更新动画
      */

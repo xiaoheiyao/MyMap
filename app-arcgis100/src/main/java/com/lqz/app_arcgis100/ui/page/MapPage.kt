@@ -1,5 +1,7 @@
 package com.lqz.app_arcgis100.ui.page
 
+import android.content.Context
+import android.os.Bundle
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -13,18 +15,26 @@ import com.esri.arcgisruntime.geometry.Point
 import com.esri.arcgisruntime.mapping.ArcGISMap
 import com.esri.arcgisruntime.mapping.Basemap
 import com.esri.arcgisruntime.mapping.view.MapView
+import com.lqz.imap.core.internal.IMapDelegate
+import com.lqz.imap.core.internal.IMapViewDelegate
+import com.lqz.imap.core.listener.OnMapLoadedListener
+import com.lqz.imap.model.MapType
+import com.lqz.imap_arcgis100.Arcgis100MapView
 import com.lqz.imap_arcgis100.tdt.LayerInfoFactory
 import com.lqz.imap_arcgis100.tdt.TianDiTuLayer
 import com.lqz.tianditu.TianDiTuLayerTypes
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MapPage() {
-    Arcgis100MapView()
+fun MapPage(
+    savedInstanceState: Bundle?,
+) {
+//    Arcgis100MapView1()
+    WtMapView(savedInstanceState)
 }
 
 @Composable
-fun Arcgis100MapView() {
+fun Arcgis100MapView1() {
 
     val lifecycleOwner = LocalLifecycleOwner.current
     // 创建一个可变的引用，用于持有 MapView 实例
@@ -34,13 +44,8 @@ fun Arcgis100MapView() {
         modifier = Modifier.fillMaxSize(),
         factory = {
             mapView = MapView(it)
-//            val map = ArcGISMap(Basemap.Type.TOPOGRAPHIC, 32.056295, 118.195800, 16)
-//            mapView?.map = map
-//            addTDT(mapView!!)
-//            val centralPoint = Point(116.41, 39.902);
             val map = ArcGISMap(Basemap.Type.IMAGERY, 32.056295, 118.195800, 14)
             mapView?.map = map
-//            mapView?.setViewpointCenterAsync(centralPoint, 400000.0) //设置地图中心点和初始放缩比
             mapView?.setAttributionTextVisible(false); //隐藏Esri logo
 
             mapView!!
@@ -69,24 +74,50 @@ fun Arcgis100MapView() {
     }
 }
 
-fun addTDT(mapView: MapView) {
-    val layerInfo = LayerInfoFactory.getLayerInfo(TianDiTuLayerTypes.TIANDITU_VECTOR_MERCATOR)
-    val info = layerInfo.tileInfo
-    val fullExtent = layerInfo.fullExtent
-    val layer = TianDiTuLayer(info, fullExtent,mapView.context)
-    layer.layerInfo = layerInfo
 
-//    val layerInfoCva = LayerInfoFactory.getLayerInfo(TianDiTuLayerTypes.TIANDITU_IMAGE_ANNOTATION_CHINESE_MERCATOR)
-//    val infoCva = layerInfoCva.tileInfo
-//    val fullExtentCva = layerInfoCva.fullExtent
-//    val layerCva = TianDiTuLayer(infoCva, fullExtentCva)
-//    layerCva.layerInfo = layerInfoCva
 
-    val map = ArcGISMap().apply {
-        basemap.baseLayers.add(layer)
-//        basemap.baseLayers.add(layerCva)
-    }
-    mapView.map = map
+@Composable
+fun WtMapView(
+    savedInstanceState: Bundle?,
+//    mapFeatureCallback: (IMappingMapFeature) -> Unit = {},
+    mapCallback: (IMapDelegate) -> Unit = {},
+) {
+    AndroidView(
+        modifier = Modifier.fillMaxSize(),
+        factory = {
+            val mapView = com.lqz.imap.core.MapView(it)
+            mapView.initialize(getIMpViewImp(it)) //初始化地图控件
+
+            mapView.onCreate(savedInstanceState) //创建地图控件
+
+            mapView.getIMapView()?.getMapAsync { map ->
+                /*设置地图加载监听器*/
+                map.setOnMapLoadedListener(object : OnMapLoadedListener {
+                    override fun onMapLoaded() {
+//                        mapFeatureCallback(MappingMapFeature(mapView.getIMapView(), map))
+                        mapCallback(map)
+                    }
+
+                })
+                showMapType(map) //设置地图类型
+            }
+            mapView
+        },
+        update = {
+            it.onResume()
+        })
+}
+
+/**
+ * 设置地图类型
+ * @param map 地图委托类
+ */
+fun showMapType(map: IMapDelegate?) {
+    map?.setMapType(MapType.MAP_TYPE_USER_DEFIED)
+}
+
+private fun getIMpViewImp(context: Context): IMapViewDelegate {
+    return Arcgis100MapView(context)
 }
 
 

@@ -43,6 +43,7 @@ dependencies {
 
     api(project(":imap"))
     api(project(":tianditu"))
+    api(project(":algorithm"))
     api("com.esri.arcgisruntime:arcgis-android:100.15.5")
 
     implementation("com.github.bumptech.glide:glide:4.16.0")
